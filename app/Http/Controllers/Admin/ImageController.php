@@ -35,6 +35,7 @@ class ImageController extends Controller
             return \response()->json([
                 'success' => $data ? 1 : 0,
                 'url' => $data['url'],
+                'filesize' => $data['filesize'],
             ], 200);
         }
     }
@@ -47,8 +48,12 @@ class ImageController extends Controller
             $option = $request->input('option') ?? '';
             $this->handleImage->getImage($path);
             $this->handleImage->handle($type, $option);
-            $this->handleImage->save();
-            return back();
+            $data = $this->handleImage->save();
+            return \response()->json([
+                'success' => $data ? 1 : 0,
+                'url' => $data['url'],
+                'filesize' => $data['filesize'],
+            ], 200);
         } else {
             abort(404);
         }

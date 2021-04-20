@@ -11,6 +11,7 @@ class HandleImageService
 
     public function handle($type, $option)
     {
+
         switch ($type) {
             case 'crop':
                 $this->crop($option);
@@ -30,21 +31,23 @@ class HandleImageService
         }
     }
 
-    public function save()
+    public function save($quality=null)
     {
+        $quality = $quality ?? config('QUALITY_IMAGE');
+        $storagePath = Storage::disk('public')->getAdapter()->getPathPrefix();
         $filename = time() . \uniqid();
         $ext = $this->getExtension();
-        $storagePath = $filename . '.' . $ext;
-        if (Storage::disk('public')->put($storagePath, $this->image->encode($ext, 100))) {
-            $hash = md5_file(storage_path('app/public/' . $storagePath));
+        $fullPath = $storagePath . $filename . '.' . $ext;
+
+        if ($this->image->save($fullPath, $quality)) {
+            $hash = md5_file($fullPath);
             return [
                 'path' => $storagePath,
                 'hash' => $hash,
-                'url' => Storage::disk('public')->url($storagePath),
+                'url' => Storage::disk('public')->url($filename . '.' . $ext),
+                'filesize' => $this->image->filesize(),
             ];
         }
-
-        return [];
     }
 
     protected function getExtension()
@@ -82,7 +85,6 @@ class HandleImageService
             $path = Storage::disk('public')->path($path);
             $this->image = Image::make($path);
             return $url;
-            // return $path;
         }
     }
 
@@ -93,9 +95,7 @@ class HandleImageService
 
     protected function compress($option)
     {
-        dump($this->image->filesize(), $option['quality'], $this->getExtension());
-        $this->image = $this->image->encode($this->getExtension(), (int)$option['quality']);
-        dd($this->image->filesize());
+        return $this->save($option['quality']);
     }
 
     protected function watermark($option)

@@ -138,34 +138,15 @@
         const fileInput = document.getElementById('upload_photo')
         let formData = new FormData()
         let image = fileInput.files[0]
-        rePrintMeta(image.size)
         formData.append('uploadImage', image)
-        axios.post('http://itd-admin.loc/admin/image', formData, {
+        axios.post("{{ route('admin.save-image') }}", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             })
             .then(function (response) {
-                url = response.data.url
-                changeImage(url)
-                console.log('success', response.data)
-            })
-    }
-
-    function compressPhoto() {
-        let formData = new FormData()
-        let image = fileInput.files[0]
-        rePrintMeta(image.size)
-        axios.post('http://itd-admin.loc/admin/image/handle', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(function (data) {
-                console.log('success', data)
-            })
-            .catch(function (data) {
-                console.log('success', data)
+                changeImage(response.data.url)
+                rePrintMeta(response.data.filesize)
             })
     }
 
@@ -181,22 +162,22 @@
 
     function compressHandle() {
         let path = document.getElementById('image').src.split('/').pop();
-
         let quality = document.getElementById('qualityInput').value
         let formData = new FormData()
         formData.append('type', 'compress')
         formData.append('option[quality]', quality)
         formData.append('path', path)
-        axios.post('http://itd-admin.loc/admin/image/handle', formData, {
+        axios.post("{{ route('admin.handle-image') }}", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             })
-            .then(function (data) {
-                console.log('success', data)
+            .then(function (response) {
+                changeImage(response.data.url)
+                rePrintMeta(response.data.filesize)
             })
-            .catch(function (data) {
-                console.log('success', data)
+            .catch(function (response) {
+                console.log('success', response)
             })
     }
 
