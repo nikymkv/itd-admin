@@ -22,8 +22,7 @@ class ImageController extends Controller
 
     public function getImage($path)
     {
-        dd($this->handleImage->getImage($path));
-
+        $this->handleImage->getImage($path);
     }
 
     public function save(Request $request)
@@ -58,6 +57,4 @@ class ImageController extends Controller
             abort(404);
         }
     }
-
- 
 }

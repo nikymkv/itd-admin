@@ -8,10 +8,8 @@ class HandleImageService
 {
     protected $image;
     
-
     public function handle($type, $option)
     {
-
         switch ($type) {
             case 'crop':
                 $this->crop($option);
@@ -90,7 +88,13 @@ class HandleImageService
 
     protected function crop($option)
     {
-        dd('crop');
+        $this->image->crop(
+            $option['width'],
+            $option['height'],
+            $option['x'],
+            $option['y']
+        );
+        return $this->save(100);
     }
 
     protected function compress($option)
@@ -100,18 +104,30 @@ class HandleImageService
 
     protected function watermark($option)
     {
-        dump('watermark');
+        $watermarkPath = $this->getWatermark();
+        $this->image->insert($watermarkPath, 'bottom-right', 10, 10);
+        return $this->save(100);
     }
 
     protected function resize($option)
     {
-        dump('resize');
+        $this->image->resize($option['width'], $option['height'], function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+        return $this->save(100);
     }
 
     protected function changeOrientation($option)
     {
-        dump('changeOrientation');
+        $this->image->rotate(90);
+        return $this->save(100);
     }
 
-
+    protected function getWatermark()
+    {
+        $storagePath = Storage::disk('public')->getAdapter()->getPathPrefix();
+        $fullPath = $storagePath . 'watermark/watermark.png';
+        return Image::make($fullPath)->fit(50);
+    }
 }
