@@ -147,6 +147,7 @@
                 }
             })
             .then(function (response) {
+                console.log(response)
                 changeImage(response.data.url)
                 rePrintMeta(response.data.filesize)
             })

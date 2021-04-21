@@ -7,6 +7,17 @@ use Storage;
 class HandleImageService
 {
     protected $image;
+    protected $imagePath;
+    protected $imageName;
+    protected $imageExt;
+    protected $storageDisk;
+    protected $watermarkPath;
+
+    public function __construct()
+    {
+        $this->storageDisk = env('STORAGE_DISK');
+        $this->watermarkPath = env('WATERMARK_PATH');
+    }
     
     public function handle($type, $option)
     {
@@ -29,21 +40,29 @@ class HandleImageService
         }
     }
 
-    public function save($quality=null)
+    public function save($quality = null)
     {
         $quality = $quality ?? config('QUALITY_IMAGE');
-        $storagePath = Storage::disk('public')->getAdapter()->getPathPrefix();
-        $filename = time() . \uniqid();
-        $ext = $this->getExtension();
-        $fullPath = $storagePath . $filename . '.' . $ext;
+        $storagePath = $this->getStoragePath();
+        $this->imageName = time() . uniqid();
+        $this->imageExt = $this->getExtension();
+        $this->imagePath = $storagePath . $this->imageName . '.' . $this->imageExt;
 
-        if ($this->image->save($fullPath, $quality)) {
-            $hash = md5_file($fullPath);
+        if ($this->image->save($this->imagePath, $quality)) {
+            $hash = md5_file($this->imagePath);
             return [
+                'success' => 1,
                 'path' => $storagePath,
                 'hash' => $hash,
-                'url' => Storage::disk('public')->url($filename . '.' . $ext),
+                'url' => Storage::disk($this->storageDisk)->url($this->imageName . '.' . $this->imageExt),
                 'filesize' => $this->image->filesize(),
+                'http_code' => 200,
+            ];
+        } else {
+            return [
+                'success' => 0,
+                'error_msg' => 'Failed to save image',
+                'http_code' => 501,
             ];
         }
     }
@@ -74,20 +93,32 @@ class HandleImageService
         $this->image = Image::make($image);
     }
 
-    public function getImage($path)
+    public function setImageByPath($path)
     {
-        if ( ! Storage::disk('public')->exists($path)) {
+        if ( ! Storage::disk($this->storageDisk)->exists($path)) {
             abort('404');
         } else {
-            $url = Storage::disk('public')->url($path);
-            $path = Storage::disk('public')->path($path);
-            $this->image = Image::make($path);
-            return $url;
+            $this->image = Image::make(Storage::disk($this->storageDisk)->path($path));
+        }
+    }
+
+    public function getImageUrl($path)
+    {
+        if ( ! Storage::disk($this->storageDisk)->exists($path)) {
+            abort('404');
+        } else {
+            return Storage::disk($this->storageDisk)->url($path);
         }
     }
 
     protected function crop($option)
     {
+        $originalWidth = $this->image->width();
+        $originalHeight = $this->image->height();
+        if ($originalWidth < $option['width'] + $option['x'] || $originalHeight < $option['height'] + $option['y']) {
+            abort(422);
+        }
+
         $this->image->crop(
             $option['width'],
             $option['height'],
@@ -105,7 +136,8 @@ class HandleImageService
     protected function watermark($option)
     {
         $watermarkPath = $this->getWatermark();
-        $this->image->insert($watermarkPath, 'bottom-right', 10, 10);
+        $this->image
+            ->insert($watermarkPath, 'bottom-right', 10, 10);
         return $this->save(100);
     }
 
@@ -126,8 +158,14 @@ class HandleImageService
 
     protected function getWatermark()
     {
-        $storagePath = Storage::disk('public')->getAdapter()->getPathPrefix();
-        $fullPath = $storagePath . 'watermark/watermark.png';
+        $fullPath = $this->getStoragePath() . $this->watermarkPath;
         return Image::make($fullPath)->fit(50);
+    }
+
+    protected function getStoragePath()
+    {
+        return Storage::disk($this->storageDisk)
+            ->getAdapter()
+            ->getPathPrefix();
     }
 }

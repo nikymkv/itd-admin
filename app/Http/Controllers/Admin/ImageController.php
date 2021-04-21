@@ -22,7 +22,8 @@ class ImageController extends Controller
 
     public function getImage($path)
     {
-        $this->handleImage->getImage($path);
+        $url = $this->handleImage->getImageUrl($path);
+        $this->sendResponse(['url' => $url], 200);
     }
 
     public function save(Request $request)
@@ -30,12 +31,16 @@ class ImageController extends Controller
         if ($request->hasFile('uploadImage')) {
             $this->handleImage->setImage($request->file('uploadImage'));
             $data = $this->handleImage->save();
-            
-            return \response()->json([
-                'success' => $data ? 1 : 0,
-                'url' => $data['url'],
-                'filesize' => $data['filesize'],
-            ], 200);
+            if ($data) {
+                $this->sendResponse($data, $data['http_code']);
+            } else {
+                $this->sendResponse($data, $data['http_code']);
+            }
+        } else {
+            $this->sendResponse([
+                'success' => 0,
+                'error_msg' => 'Input file is empty!',
+            ], 400);
         }
     }
 
@@ -45,16 +50,17 @@ class ImageController extends Controller
         if ( ! empty($path)) {
             $type = $request->input('type') ?? '';
             $option = $request->input('option') ?? '';
-            $this->handleImage->getImage($path);
+            $this->handleImage->setImageByPath($path);
             $this->handleImage->handle($type, $option);
             $data = $this->handleImage->save();
-            return \response()->json([
-                'success' => $data ? 1 : 0,
-                'url' => $data['url'],
-                'filesize' => $data['filesize'],
-            ], 200);
+            $this->sendResponse($data, $data['http_code']);
         } else {
             abort(404);
         }
+    }
+
+    protected function sendResponse($data, $code)
+    {
+        return response()->json($data, $code);
     }
 }
