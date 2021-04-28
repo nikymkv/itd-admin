@@ -40,4 +40,13 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function updateUser(array $data)
+    {
+        $this->update([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => \Hash::make($data['password']) ?? $this->password,
+        ]);
+    }
 }

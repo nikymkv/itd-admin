@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\Admin\UpdateAdminRequest;
+use Auth;
 
 class ProfileSettings extends Controller
 {
@@ -19,9 +20,7 @@ class ProfileSettings extends Controller
 
     public function updateProfile(UpdateAdminRequest $request)
     {
-        dd($request->all());
-        dd($request->validated());
-        User::where('id', \Auth::user()->id)->update($request->validated());
+        Auth::user()->updateUser($request->validated());
         return back();
     }
 

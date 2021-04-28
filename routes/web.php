@@ -52,9 +52,10 @@ Route::namespace('App\Http\Controllers\Admin')
                 Route::get('image/{path}', 'ImageController@getImage')->name('get-image');
                 Route::post('image', 'ImageController@save')->name('save-image');
                 Route::post('image/handle', 'ImageController@handle')->name('handle-image');
+
+                Route::get('settings/mail', 'MailController@show')->name('settings.mail');
+                Route::post('settings/mail', 'MailController@save')->name('settings.mail.save');
             });
 });
-
-
-
+Route::post('mail/send', [App\Http\Controllers\Admin\MailController::class, 'sendMail'])->name('send-mail');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

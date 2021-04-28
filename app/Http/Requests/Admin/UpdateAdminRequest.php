@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\Profile\RequiredPassword;
 
 class UpdateAdminRequest extends FormRequest
 {
@@ -26,8 +27,7 @@ class UpdateAdminRequest extends FormRequest
         return [
             'name' => 'required|string|min:2|max:255',
             'email' => 'required|email',
-            'password' => 'nullable|string|min:4|max:255|confirmed',
-            'password_confirmation' => 'required_with:password'
+            'password' => 'nullable|min:4|max:255|confirmed',
         ];
     }
 }
