@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Models\Admin\Settings;
+use App\Models\Settings;
 
 class SettingsServiceProvider extends ServiceProvider
 {

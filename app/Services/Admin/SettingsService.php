@@ -1,7 +1,7 @@
 <?php
 namespace App\Services\Admin;
 
-use App\Models\Admin\Settings;
+use App\Models\Settings;
 use App\Providers\SettingsServiceProvider;
 
 class SettingsService

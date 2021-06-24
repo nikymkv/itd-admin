@@ -1,0 +1,7 @@
+.table-body tr{
+    cursor: pointer;
+}
+
+.table-body tr:hover {
+    background-color: bisque;
+}

@@ -55,6 +55,16 @@ Route::namespace('App\Http\Controllers\Admin')
 
                 Route::get('settings/mail', 'MailController@show')->name('settings.mail');
                 Route::post('settings/mail', 'MailController@save')->name('settings.mail.save');
+
+                Route::prefix('mail')
+                    ->name('mail.')
+                    ->group(function () {
+                        Route::get('templates', 'MailTemplateController@index')->name('templates.index');
+                        Route::get('templates/create', 'MailTemplateController@create')->name('templates.create');
+                        Route::post('templates/create', 'MailTemplateController@store')->name('templates.store');
+                        Route::get('templates/{template}', 'MailTemplateController@show')->name('templates.show');
+                        Route::put('templates/{template}', 'MailTemplateController@update')->name('templates.update');
+                });
             });
 });
 Route::post('mail/send', [App\Http\Controllers\Admin\MailController::class, 'sendMail'])->name('send-mail');
